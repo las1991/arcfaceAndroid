@@ -2,15 +2,28 @@ package com.las.arc_face.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.ByteBuffer;
 
 public class ImageUtil {
+    private static final String TAG = "ImageUtil";
+
+    public static final int GET_DATA_SUCCESS = 1;
+    public static final int NETWORK_ERROR = 2;
+    public static final int SERVER_ERROR = 3;
+
     private static final int VALUE_FOR_4_ALIGN = 0b11;
     private static final int VALUE_FOR_2_ALIGN = 0b01;
 
@@ -114,6 +127,39 @@ public class ImageUtil {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static void getBitmapFromNetwork(String path, Handler handler) {
+        try {
+            //把传过来的路径转成URL
+            URL url = new URL(path);
+            //获取连接
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            //使用GET方法访问网络
+            connection.setRequestMethod("GET");
+            //超时时间为10秒
+            connection.setConnectTimeout(10000);
+            //获取返回码
+            int code = connection.getResponseCode();
+            if (code == 200) {
+                InputStream inputStream = connection.getInputStream();
+                //使用工厂把网络的输入流生产Bitmap
+                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                //利用Message把图片发给Handler
+                Message msg = Message.obtain();
+                msg.obj = bitmap;
+                msg.what = GET_DATA_SUCCESS;
+                handler.sendMessage(msg);
+                inputStream.close();
+            } else {
+                //服务启发生错误
+                handler.sendEmptyMessage(SERVER_ERROR);
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "getBitmapFromNetwork: error", e);
+            //网络连接错误
+            handler.sendEmptyMessage(NETWORK_ERROR);
         }
     }
 

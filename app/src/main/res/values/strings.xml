@@ -6,6 +6,7 @@
     <string name="page_multi_image">face compare 1:n(image vs image)</string>
     <string name="start_process">process</string>
     <string name="choose_local_image">choose local image</string>
+    <string name="choose_remote_image">choose remote image</string>
     <string name="choose_main_image">choose main image</string>
     <string name="add_item_image">add item image</string>
     <string name="processing">processing</string>
@@ -41,4 +42,6 @@
     <string name="title_notifications">title_notifications</string>
     <string name="title_dashboard">title_dashboard</string>
     <string name="testButton">testButton</string>
+    <string name="check_in">check in</string>
+    <string name="student_manage">student manage</string>
 </resources>

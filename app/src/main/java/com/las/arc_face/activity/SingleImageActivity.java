@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.*;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -27,6 +28,10 @@ import android.widget.Toast;
 import com.arcsoft.face.*;
 import com.arcsoft.face.enums.DetectFaceOrientPriority;
 import com.arcsoft.face.enums.DetectMode;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.ViewTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.las.arc_face.R;
 import com.las.arc_face.util.ConfigUtil;
 import com.las.arc_face.util.ImageUtil;
@@ -524,6 +529,25 @@ public class SingleImageActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
         startActivityForResult(intent, ACTION_CHOOSE_IMAGE);
+    }
+
+    /**
+     * 从远程选择文件
+     * @param view
+     */
+    public void chooseRemoteImage(View view) {
+        String url = "https://cn.bing.com/th?id=OIP.oA1NaHlNFphHN1RAAaTdvQAAAA&pid=Api&rs=1";
+        Glide.with(SingleImageActivity.this).asBitmap().load(url).into(new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                mBitmap = resource;
+                ivShow.setImageBitmap(resource);
+            }
+
+            @Override
+            public void onLoadCleared(@Nullable Drawable placeholder) {
+            }
+        });
     }
 
     @Override

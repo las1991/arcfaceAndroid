@@ -3,11 +3,13 @@ package com.las.arc_face.activity;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -30,6 +32,7 @@ import static com.arcsoft.face.enums.DetectFaceOrientPriority.*;
 
 
 public class ChooseFunctionActivity extends AppCompatActivity {
+    private static final String TAG = "ChooseFunctionActivity";
 
     private Toast toast = null;
     private static final int ACTION_REQUEST_PERMISSIONS = 0x001;
@@ -42,7 +45,6 @@ public class ChooseFunctionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_choose_function);
         initView();
-
     }
 
     private void initView() {
@@ -143,6 +145,22 @@ public class ChooseFunctionActivity extends AppCompatActivity {
     }
 
     /**
+     * 签到
+     * @param view
+     */
+    public void jumpToCheckInActivity(View view) {
+        startActivity(new Intent(this, CheckInActivity.class));
+    }
+
+    /**
+     * 学生管理
+     * @param view
+     */
+    public void jumpToStudentManageActivity(View view) {
+        startActivity(new Intent(this, StudentManageActivity.class));
+    }
+
+    /**
      * 激活引擎
      *
      * @param view
@@ -224,6 +242,12 @@ public class ChooseFunctionActivity extends AppCompatActivity {
                 showToast(getString(R.string.permission_denied));
             }
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.i(TAG, "onConfigurationChanged: orientation " + getResources().getConfiguration().orientation);
     }
 
     private void showToast(String s) {

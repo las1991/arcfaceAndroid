@@ -105,13 +105,17 @@ public class CameraHelper implements Camera.PreviewCallback {
                         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
                     }
                 }
+
+                if (parameters.getSupportedPreviewFpsRange().isEmpty()){
+                    Log.i(TAG, "SupportedPreviewFpsRange empty");
+                }
                 for (int[] range : parameters.getSupportedPreviewFpsRange()) {
                     Log.i(TAG, "SupportedPreviewFpsRange: " + Arrays.toString(range));
                 }
                 if (!parameters.getSupportedPreviewFpsRange().isEmpty()) {
                     int[] range = parameters.getSupportedPreviewFpsRange().get(0);
                     Log.i(TAG, "setPreviewFpsRange :" + Arrays.toString(range));
-                    parameters.setPreviewFpsRange(range[0], range[1]);
+                    parameters.setPreviewFpsRange(range[1], range[1]);
                 }
                 mCamera.setParameters(parameters);
                 if (previewDisplayView instanceof TextureView) {

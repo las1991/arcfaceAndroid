@@ -47,6 +47,12 @@
         <activity
                 android:name=".activity.FaceManageActivity"
                 android:launchMode="singleTop"/>
+        <activity
+                android:name=".activity.CheckInActivity"
+                android:launchMode="singleTop"/>
+        <activity
+                android:name=".activity.StudentManageActivity"
+                android:launchMode="singleTop"/>
 
         <provider
                 android:name="android.support.v4.content.FileProvider"

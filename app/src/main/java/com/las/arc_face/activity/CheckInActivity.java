@@ -51,11 +51,13 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class RegisterAndRecognizeActivity extends AppCompatActivity implements ViewTreeObserver.OnGlobalLayoutListener {
+public class CheckInActivity extends AppCompatActivity implements ViewTreeObserver.OnGlobalLayoutListener {
     private static final String TAG = "RegisterAndRecognize";
     private static final int MAX_DETECT_NUM = 10;
     /**
@@ -295,7 +297,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                         .frThreadNum(MAX_DETECT_NUM)
                         .previewSize(previewSize)
                         .faceListener(faceListener)
-                        .currentTrackId(ConfigUtil.getTrackId(RegisterAndRecognizeActivity.this.getApplicationContext()))
+                        .currentTrackId(ConfigUtil.getTrackId(CheckInActivity.this.getApplicationContext()))
                         .build();
             }
 
@@ -320,7 +322,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                     Observable.create(new ObservableOnSubscribe<Boolean>() {
                         @Override
                         public void subscribe(ObservableEmitter<Boolean> emitter) {
-                            boolean success = faceServer.register(RegisterAndRecognizeActivity.this, nv21.clone(), previewSize.width, previewSize.height, "registered " + faceHelper.getCurrentTrackId());
+                            boolean success = faceServer.register(CheckInActivity.this, nv21.clone(), previewSize.width, previewSize.height, "registered " + faceHelper.getCurrentTrackId());
                             emitter.onNext(success);
                         }
                     })
@@ -335,13 +337,13 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                                 @Override
                                 public void onNext(Boolean success) {
                                     String result = success ? "register success!" : "register failed!";
-                                    Toast.makeText(RegisterAndRecognizeActivity.this, result, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(CheckInActivity.this, result, Toast.LENGTH_SHORT).show();
                                     registerStatus = REGISTER_STATUS_DONE;
                                 }
 
                                 @Override
                                 public void onError(Throwable e) {
-                                    Toast.makeText(RegisterAndRecognizeActivity.this, "register failed!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(CheckInActivity.this, "register failed!", Toast.LENGTH_SHORT).show();
                                     registerStatus = REGISTER_STATUS_DONE;
                                 }
 

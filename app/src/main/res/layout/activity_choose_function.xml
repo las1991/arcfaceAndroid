@@ -94,6 +94,20 @@
                 android:layout_height="wrap_content"
                 android:onClick="jumpToBatchRegisterActivity"
                 android:text="@string/face_manage"/>
+
+        <Button
+                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="jumpToCheckInActivity"
+                android:text="@string/check_in"/>
+
+        <Button
+                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="jumpToStudentManageActivity"
+                android:text="@string/student_manage"/>
     </LinearLayout>
 
 </LinearLayout>

@@ -38,6 +38,8 @@ public class FaceManageActivity extends AppCompatActivity {
     private static final String REGISTER_FAILED_DIR = ROOT_DIR + File.separator + "failed";
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+    private FaceServer faceServer = new FaceServer();
+
     private TextView tvNotificationRegisterResult;
 
     ProgressDialog progressDialog = null;
@@ -54,7 +56,7 @@ public class FaceManageActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         tvNotificationRegisterResult = findViewById(R.id.notification_register_result);
         progressDialog = new ProgressDialog(this);
-        FaceServer.getInstance().init(this);
+        faceServer.init(this);
     }
 
     @Override
@@ -66,7 +68,7 @@ public class FaceManageActivity extends AppCompatActivity {
             progressDialog.dismiss();
         }
 
-        FaceServer.getInstance().unInit();
+        faceServer.unInit();
         super.onDestroy();
     }
 
@@ -147,7 +149,7 @@ public class FaceManageActivity extends AppCompatActivity {
                         if (nv21 == null) {
                             Log.i(FaceManageActivity.class.getSimpleName(), jpgFile.getName() + "bitmapToNv21 fail");
                         }
-                        boolean success = FaceServer.getInstance().register(FaceManageActivity.this, nv21, bitmap.getWidth(), bitmap.getHeight(),
+                        boolean success = faceServer.register(FaceManageActivity.this, nv21, bitmap.getWidth(), bitmap.getHeight(),
                                 jpgFile.getName().substring(0, jpgFile.getName().lastIndexOf(".")));
                         if (!success) {
                             Log.e(FaceManageActivity.class.getSimpleName(), jpgFile.getName() + " FaceServer register fail");
@@ -205,7 +207,7 @@ public class FaceManageActivity extends AppCompatActivity {
     }
 
     public void clearFaces(View view) {
-        int faceNum = FaceServer.getInstance().getFaceNumber(this);
+        int faceNum = faceServer.getFaceNumber(this);
         if (faceNum == 0) {
             Toast.makeText(this, R.string.no_face_need_to_delete, Toast.LENGTH_SHORT).show();
         } else {
@@ -215,7 +217,7 @@ public class FaceManageActivity extends AppCompatActivity {
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            int deleteCount = FaceServer.getInstance().clearAllFaces(FaceManageActivity.this);
+                            int deleteCount = faceServer.clearAllFaces(FaceManageActivity.this);
                             Toast.makeText(FaceManageActivity.this, deleteCount + " faces cleared!", Toast.LENGTH_SHORT).show();
                         }
                     })
