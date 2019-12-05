@@ -4,15 +4,15 @@
         android:layout_height="match_parent"
         android:layout_width="match_parent">
     <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_gravity="center"
             android:layout_margin="10dip"
             android:id="@+id/student_name"/>
 
     <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_margin="10dp"
             android:id="@+id/student_avatar_image"/>
     <TextView

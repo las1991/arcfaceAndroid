@@ -1,6 +1,8 @@
 package com.las.arc_face.activity;
 
 import android.app.AlertDialog;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
@@ -13,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -27,6 +30,7 @@ import com.las.arc_face.config.FaceEngineConfig;
 import com.las.arc_face.faceserver.FaceServer;
 import com.las.arc_face.model.Student;
 import com.las.arc_face.request.CharsetStringRequest;
+import com.las.arc_face.util.ConfigUtil;
 import com.las.arc_face.util.ImageUtil;
 import com.las.arc_face.util.student.StudentInfo;
 import com.las.arc_face.util.student.StudentInfoDao;
@@ -54,6 +58,7 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
     private List<Student> dataList;
 
     private TextView tvNotice;
+    private Toast toast = null;
 
     /**
      * 提示对话框
@@ -68,18 +73,22 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_manage);
+        // Activity启动后就锁定为启动时的方向
+        switch (getResources().getConfiguration().orientation) {
+            case Configuration.ORIENTATION_PORTRAIT:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                break;
+            case Configuration.ORIENTATION_LANDSCAPE:
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                break;
+            default:
+                break;
+        }
         faceServer.init(this, FaceEngineConfig.image(360));
         studentInfoDao = new StudentInfoDao(this);
 
         // 设置adapter(所在的activity,使用的显示样式,数据源)
         dataList = new ArrayList<>();
-        for (int i = 1; i <= 20; i++) {
-            Student student = new Student();
-            student.setId(i);
-            student.setName("x学生" + i);
-            student.setAvatar("http://10.253.9.56/" + i + ".jpg");
-            dataList.add(student);
-        }
         studentInfoAdapter = new StudentInfoAdapter(StudentManageActivity.this, dataList);
         studentInfoView = findViewById(R.id.studentInfoView);
         studentInfoView.setAdapter(studentInfoAdapter);
@@ -92,13 +101,13 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
                 .setTitle(R.string.processing)
                 .setView(new ProgressBar(this))
                 .create();
-//        initData();
+        initData();
     }
 
     private void initData() {
-        Log.i(TAG, "init: ");
+        String url = ConfigUtil.getStudentManagerUrl(this);
+        Log.i(TAG, "initData: " + url);
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "http://10.253.9.56/students.json";
 
         CharsetStringRequest stringRequest = new CharsetStringRequest(Request.Method.GET, url, new Response.Listener<String>() {
             @Override
@@ -119,7 +128,7 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
                 for (int i = 1; i <= 20; i++) {
                     Student student = new Student();
                     student.setId(i);
-                    student.setName("x学生" + i);
+                    student.setName("error学生" + i);
                     student.setAvatar("http://10.253.9.56/" + i + ".jpg");
                     students.add(student);
                 }
@@ -204,9 +213,9 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
     }
 
     public void batchUnRegister(View view) {
-        for (int pos = 0; pos < studentInfoAdapter.getItemCount(); pos++) {
-            dataList.get(pos);
-        }
+        faceServer.clearAllFaces(this);
+        studentInfoAdapter.notifyDataSetChanged();
+        showToast("success");
     }
 
     public void batchRegister(final View view) {
@@ -253,7 +262,9 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
                     @Override
                     public void onComplete() {
                         Log.i(TAG, "onComplete: ");
-                        appendNotificationAndFinish(null);
+                        SpannableStringBuilder builder=new SpannableStringBuilder();
+                        addNotificationInfo(builder,null,"finish!");
+                        appendNotificationAndFinish(builder);
                         view.setClickable(true);
                     }
                 });
@@ -285,7 +296,7 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
             studentInfoDao.saveOrUpdate(studentInfo);
         }
         if (studentInfo.getFeatureData() != null) {
-            addNotificationInfo(notificationSpannableStringBuilder, null, " AvatarFile is not null!");
+            addNotificationInfo(notificationSpannableStringBuilder, null, " studentInfo FeatureData is not null!");
             appendNotification(notificationSpannableStringBuilder);
             return;
         }
@@ -340,18 +351,50 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
         }
 
         progressDialog.show();
-        Observable.create(new ObservableOnSubscribe<Integer>() {
+        Observable.create(new ObservableOnSubscribe<Object>() {
             @Override
-            public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+            public void subscribe(ObservableEmitter<Object> emitter) throws Exception {
                 processImage(position);
-                appendNotificationAndFinish(null);
+                emitter.onComplete();
             }
-        });
-//        Toast.makeText(StudentManageActivity.this, "点击了第" + position + "条数据", Toast.LENGTH_SHORT).show();
+        })
+                .subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Object>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(Object o) {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        showToast("finish!");
+                    }
+                });
     }
 
     @Override
     public boolean onItemLongClick(int position) {
         return false;
+    }
+
+    private void showToast(String s) {
+        if (toast == null) {
+            toast = Toast.makeText(this, s, Toast.LENGTH_SHORT);
+            toast.show();
+        } else {
+            toast.setText(s);
+            toast.show();
+        }
     }
 }

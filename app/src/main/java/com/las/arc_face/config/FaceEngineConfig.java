@@ -1,12 +1,14 @@
 package com.las.arc_face.config;
 
-import android.content.Context;
 import com.arcsoft.face.FaceEngine;
 import com.arcsoft.face.enums.DetectFaceOrientPriority;
 import com.arcsoft.face.enums.DetectMode;
-import com.las.arc_face.util.ConfigUtil;
 
 public class FaceEngineConfig {
+
+    public static final int MAX_DETECT_NUM_DEFAULT = 10;
+    public static final int MAX_DETECT_NUM_LIVE = 1;
+
 
     private static DetectFaceOrientPriority orient2Priority(int orient) {
         switch (orient) {
@@ -24,11 +26,15 @@ public class FaceEngineConfig {
     }
 
     public static FaceEngineConfig video(int orient) {
-        return new FaceEngineConfig(DetectMode.ASF_DETECT_MODE_VIDEO, orient2Priority(orient), 16, 20, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT);
+        return new FaceEngineConfig(DetectMode.ASF_DETECT_MODE_VIDEO, orient2Priority(orient), 16, MAX_DETECT_NUM_DEFAULT, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT);
     }
 
     public static FaceEngineConfig image(int orient) {
-        return new FaceEngineConfig(DetectMode.ASF_DETECT_MODE_IMAGE, orient2Priority(orient), 16, 20, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT);
+        return new FaceEngineConfig(DetectMode.ASF_DETECT_MODE_IMAGE, orient2Priority(orient), 16, MAX_DETECT_NUM_DEFAULT, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT);
+    }
+
+    public static FaceEngineConfig videoLive(int orient) {
+        return new FaceEngineConfig(DetectMode.ASF_DETECT_MODE_VIDEO, orient2Priority(orient), 16, MAX_DETECT_NUM_DEFAULT, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT | FaceEngine.ASF_LIVENESS);
     }
 
     private DetectMode detectMode;

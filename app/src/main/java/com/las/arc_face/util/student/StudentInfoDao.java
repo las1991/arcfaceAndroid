@@ -64,7 +64,7 @@ public class StudentInfoDao {
             cursor = db.query(StudentInfo.TABLE_NAME,
                     StudentInfo.COLUMNS,
                     StudentInfo.COLUMN.studentId.name() + " = ?",
-                    new String[]{studentId + ""},
+                    new String[]{String.valueOf(studentId)},
                     null, null, null);
             if (cursor.moveToFirst()) {
                 StudentInfo studentInfo = parseStudent(cursor);
@@ -130,7 +130,7 @@ public class StudentInfoDao {
             db.update(StudentInfo.TABLE_NAME,
                     cv,
                     StudentInfo.COLUMN.id.name() + " = ?",
-                    new String[]{studentInfo.getId() + ""});
+                    new String[]{String.valueOf(studentInfo.getId())});
             db.setTransactionSuccessful();
             return true;
         } catch (Exception e) {
@@ -152,6 +152,27 @@ public class StudentInfoDao {
         }
     }
 
+    public int deleteByStudentId(int studentId) {
+        SQLiteDatabase db = null;
+
+        try {
+            db = dbHelper.getWritableDatabase();
+            db.beginTransaction();
+            String[] args = {String.valueOf(studentId)};
+            int row = db.delete(StudentInfo.TABLE_NAME, StudentInfo.COLUMN.studentId.name() + "=?", args);
+            db.setTransactionSuccessful();
+            return row;
+        } catch (Exception e) {
+            Log.e(TAG, "", e);
+        } finally {
+            if (db != null) {
+                db.endTransaction();
+                db.close();
+            }
+        }
+        return -1;
+    }
+
     private StudentInfo parseStudent(Cursor cursor) {
         StudentInfo studentInfo = new StudentInfo();
         studentInfo.setId(cursor.getLong(cursor.getColumnIndex(StudentInfo.COLUMN.id.name())));
@@ -162,4 +183,6 @@ public class StudentInfoDao {
         studentInfo.setFeatureData(cursor.getBlob(cursor.getColumnIndex(StudentInfo.COLUMN.featureData.name())));
         return studentInfo;
     }
+
+
 }

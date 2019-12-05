@@ -25,9 +25,8 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 import com.arcsoft.face.*;
-import com.arcsoft.face.enums.DetectFaceOrientPriority;
-import com.arcsoft.face.enums.DetectMode;
 import com.las.arc_face.R;
+import com.las.arc_face.config.FaceEngineConfig;
 import com.las.arc_face.faceserver.CompareResult;
 import com.las.arc_face.faceserver.FaceServer;
 import com.las.arc_face.model.DrawInfo;
@@ -59,7 +58,6 @@ import java.util.concurrent.TimeUnit;
 
 public class CheckInActivity extends AppCompatActivity implements ViewTreeObserver.OnGlobalLayoutListener {
     private static final String TAG = CheckInActivity.class.getSimpleName();
-    private static final int MAX_DETECT_NUM = 10;
     /**
      * 当FR成功，活体未成功时，FR等待活体的时间
      */
@@ -72,6 +70,7 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
      * 优先打开的摄像头
      */
     private Integer cameraID = Camera.CameraInfo.CAMERA_FACING_FRONT;
+    private FaceEngineConfig faceEngineConfig;
     private FaceEngine faceEngine;
     private FaceHelper faceHelper;
     private List<CompareResult> compareResultList;
@@ -161,8 +160,9 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
      */
     private void initEngine() {
         faceEngine = new FaceEngine();
-        afCode = faceEngine.init(this, DetectMode.ASF_DETECT_MODE_VIDEO, DetectFaceOrientPriority.valueOf(ConfigUtil.getFtOrient(this)),
-                16, MAX_DETECT_NUM, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT | FaceEngine.ASF_LIVENESS);
+        faceEngineConfig = FaceEngineConfig.videoLive(360);
+        afCode = faceEngine.init(this, faceEngineConfig.getDetectMode(), faceEngineConfig.getDetectFaceOrientPriority(),
+                faceEngineConfig.getDetectFaceScaleVal(), faceEngineConfig.getDetectFaceMaxNum(), faceEngineConfig.getCombinedMask());
         VersionInfo versionInfo = new VersionInfo();
         faceEngine.getVersion(versionInfo);
         Log.i(TAG, "initEngine:  init: " + afCode + "  version:" + versionInfo);
@@ -279,7 +279,7 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
 
                 faceHelper = new FaceHelper.Builder()
                         .faceEngine(faceEngine)
-                        .frThreadNum(MAX_DETECT_NUM)
+                        .frThreadNum(FaceEngineConfig.MAX_DETECT_NUM_DEFAULT)
                         .previewSize(previewSize)
                         .faceListener(faceListener)
                         .currentTrackId(ConfigUtil.getTrackId(CheckInActivity.this.getApplicationContext()))
@@ -365,8 +365,8 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
                 isAllGranted &= (grantResult == PackageManager.PERMISSION_GRANTED);
             }
             if (isAllGranted) {
-                initEngine();
                 initCamera();
+                initEngine();
                 if (cameraHelper != null) {
                     cameraHelper.start();
                 }
@@ -462,7 +462,7 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
                             }
                             if (!isAdded) {
                                 //对于多人脸搜索，假如最大显示数量为 MAX_DETECT_NUM 且有新的人脸进入，则以队列的形式移除
-                                if (compareResultList.size() >= MAX_DETECT_NUM) {
+                                if (compareResultList.size() >= FaceEngineConfig.MAX_DETECT_NUM_DEFAULT) {
                                     compareResultList.remove(0);
                                     adapter.notifyItemRemoved(0);
                                 }
@@ -501,8 +501,8 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
         if (!checkPermissions(NEEDED_PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, NEEDED_PERMISSIONS, ACTION_REQUEST_PERMISSIONS);
         } else {
-            initEngine();
             initCamera();
+            initEngine();
         }
     }
 }

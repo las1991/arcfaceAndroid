@@ -175,7 +175,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
      */
     private void initEngine() {
         faceEngine = new FaceEngine();
-        afCode = faceEngine.init(this, DetectMode.ASF_DETECT_MODE_VIDEO, DetectFaceOrientPriority.valueOf(ConfigUtil.getFtOrient(this)),
+        afCode = faceEngine.init(this, DetectMode.ASF_DETECT_MODE_VIDEO, DetectFaceOrientPriority.ASF_OP_ALL_OUT,
                 16, MAX_DETECT_NUM, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT | FaceEngine.ASF_LIVENESS);
         VersionInfo versionInfo = new VersionInfo();
         faceEngine.getVersion(versionInfo);

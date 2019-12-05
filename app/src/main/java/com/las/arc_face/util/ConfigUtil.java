@@ -2,12 +2,12 @@ package com.las.arc_face.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import com.arcsoft.face.enums.DetectFaceOrientPriority;
 
 public class ConfigUtil {
     private static final String APP_NAME = "ArcFaceDemo";
     private static final String TRACK_ID = "trackID";
-    private static final String FT_ORIENT = "ftOrient";
+    private static final String LOAD_STUDENT_URL = "loadStudentUrl";
+    private static final String CHECK_IN_CALLBACK_URL = "checkInCallbackUrl";
 
     public static void setTrackId(Context context, int trackId) {
         if (context == null) {
@@ -27,25 +27,40 @@ public class ConfigUtil {
         return sharedPreferences.getInt(TRACK_ID, 0);
     }
 
-    public static void setFtOrient(Context context, DetectFaceOrientPriority ftOrient) {
+    public static void setStudentManagerUrl(Context context, String url) {
         if (context == null) {
             return;
         }
         SharedPreferences sharedPreferences = context.getSharedPreferences(APP_NAME, Context.MODE_PRIVATE);
         sharedPreferences.edit()
-                .putString(FT_ORIENT, ftOrient.name())
+                .putString(LOAD_STUDENT_URL, url)
                 .apply();
     }
 
-    public static String getFtOrient(Context context) {
+    public static String getStudentManagerUrl(Context context) {
         if (context == null) {
-            return DetectFaceOrientPriority.ASF_OP_ALL_OUT.name();
+            return "";
         }
-
         SharedPreferences sharedPreferences = context.getSharedPreferences(APP_NAME, Context.MODE_PRIVATE);
-        if (sharedPreferences.contains(FT_ORIENT) && sharedPreferences.getAll().get(FT_ORIENT) instanceof Integer) {
-            return DetectFaceOrientPriority.ASF_OP_ALL_OUT.name();
-        }
-        return sharedPreferences.getString(FT_ORIENT, DetectFaceOrientPriority.ASF_OP_ALL_OUT.name());
+        return sharedPreferences.getString(LOAD_STUDENT_URL, "");
     }
+
+    public static void setCheckInCallbackUrl(Context context, String url) {
+        if (context == null) {
+            return;
+        }
+        SharedPreferences sharedPreferences = context.getSharedPreferences(APP_NAME, Context.MODE_PRIVATE);
+        sharedPreferences.edit()
+                .putString(CHECK_IN_CALLBACK_URL, url)
+                .apply();
+    }
+
+    public static String getCheckInCallbackUrl(Context context) {
+        if (context == null) {
+            return "";
+        }
+        SharedPreferences sharedPreferences = context.getSharedPreferences(APP_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(CHECK_IN_CALLBACK_URL, "");
+    }
+
 }

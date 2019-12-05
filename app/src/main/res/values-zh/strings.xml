@@ -44,4 +44,6 @@
     <string name="testButton">testButton</string>
     <string name="check_in">签到</string>
     <string name="student_manage">学生管理</string>
+    <string name="student_manage_url">http://10.253.9.56/student.json</string>
+    <string name="setting">设置</string>
 </resources>

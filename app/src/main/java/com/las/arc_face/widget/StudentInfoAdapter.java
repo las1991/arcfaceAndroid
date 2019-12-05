@@ -20,6 +20,8 @@ import java.util.Objects;
 
 public class StudentInfoAdapter extends RecyclerView.Adapter<StudentInfoAdapter.StudentInfoHolder> {
 
+    private final Context mContext;
+
     public interface OnRecyclerViewListener {
         void onItemClick(int position);
 
@@ -39,6 +41,7 @@ public class StudentInfoAdapter extends RecyclerView.Adapter<StudentInfoAdapter.
     private LayoutInflater inflater;
 
     public StudentInfoAdapter(Context context, List<Student> students) {
+        this.mContext=context;
         inflater = LayoutInflater.from(context);
         this.students = students;
         this.studentInfoDao = new StudentInfoDao(context);
@@ -75,21 +78,12 @@ public class StudentInfoAdapter extends RecyclerView.Adapter<StudentInfoAdapter.
         }
         studentInfoDao.saveOrUpdate(studentInfo);
 
-        if (studentInfo.getFaceData() != null) {
-            Glide.with(studentInfoHolder.faceImage)
-                    .load(studentInfo.getFaceData())
-                    .into(studentInfoHolder.faceImage);
-        } else {
-//            File nameFaceFile = new File(FaceRegister.IMG_DIR + File.separator + student.getName() + FaceServer.IMG_SUFFIX);
-//            if (nameFaceFile.exists()) {
-//                Glide.with(studentInfoHolder.faceImage)
-//                        .load(nameFaceFile)
-//                        .into(studentInfoHolder.faceImage);
-//            }
-        }
-//        Glide.with(studentInfoHolder.avatarImage)
-//                .load(studentInfo.getAvatar())
-//                .into(studentInfoHolder.avatarImage);
+        Glide.with(mContext)
+                .load(studentInfo.getFaceData())
+                .into(studentInfoHolder.faceImage);
+        Glide.with(mContext)
+                .load(studentInfo.getAvatar())
+                .into(studentInfoHolder.avatarImage);
         // 文本控件设置文本内容
         studentInfoHolder.name.setText(studentInfo.getName());
     }

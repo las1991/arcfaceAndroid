@@ -11,12 +11,10 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 import com.arcsoft.face.ErrorInfo;
 import com.arcsoft.face.FaceEngine;
-import com.arcsoft.face.enums.DetectFaceOrientPriority;
 import com.las.arc_face.R;
 import com.las.arc_face.common.Constants;
 import com.las.arc_face.util.ConfigUtil;
@@ -27,8 +25,6 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-
-import static com.arcsoft.face.enums.DetectFaceOrientPriority.*;
 
 
 public class ChooseFunctionActivity extends AppCompatActivity {
@@ -48,55 +44,22 @@ public class ChooseFunctionActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        //设置视频模式下的人脸优先检测方向
-        RadioGroup radioGroupFtOrient = findViewById(R.id.radio_group_ft_orient);
-        RadioButton rbOrient0 = findViewById(R.id.rb_orient_0);
-        RadioButton rbOrient90 = findViewById(R.id.rb_orient_90);
-        RadioButton rbOrient180 = findViewById(R.id.rb_orient_180);
-        RadioButton rbOrient270 = findViewById(R.id.rb_orient_270);
-        RadioButton rbOrient360 = findViewById(R.id.rb_orient_360);
-        DetectFaceOrientPriority priority = DetectFaceOrientPriority.valueOf(ConfigUtil.getFtOrient(this));
-        switch (priority) {
-            case ASF_OP_0_ONLY:
-                rbOrient0.setChecked(true);
-                break;
-            case ASF_OP_90_ONLY:
-                rbOrient90.setChecked(true);
-                break;
-            case ASF_OP_180_ONLY:
-                rbOrient180.setChecked(true);
-                break;
-            case ASF_OP_270_ONLY:
-                rbOrient270.setChecked(true);
-                break;
-            case ASF_OP_ALL_OUT:
-            default:
-                rbOrient360.setChecked(true);
-                break;
-        }
-        radioGroupFtOrient.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.rb_orient_0:
-                        ConfigUtil.setFtOrient(ChooseFunctionActivity.this, ASF_OP_0_ONLY);
-                        break;
-                    case R.id.rb_orient_90:
-                        ConfigUtil.setFtOrient(ChooseFunctionActivity.this, ASF_OP_90_ONLY);
-                        break;
-                    case R.id.rb_orient_180:
-                        ConfigUtil.setFtOrient(ChooseFunctionActivity.this, ASF_OP_180_ONLY);
-                        break;
-                    case R.id.rb_orient_270:
-                        ConfigUtil.setFtOrient(ChooseFunctionActivity.this, ASF_OP_270_ONLY);
-                        break;
-                    case R.id.rb_orient_360:
-                    default:
-                        ConfigUtil.setFtOrient(ChooseFunctionActivity.this, ASF_OP_ALL_OUT);
-                        break;
-                }
-            }
-        });
+        EditText editText = findViewById(R.id.editText);
+        String studentUrl = editText.getText().toString();
+        ConfigUtil.setStudentManagerUrl(this, studentUrl);
+        EditText checkInEditText = findViewById(R.id.check_in_callback_editText);
+        String checkInCallBackUrl = checkInEditText.getText().toString();
+        ConfigUtil.setCheckInCallbackUrl(this, checkInCallBackUrl);
+    }
+
+    public void setUrl(View view) {
+        EditText editText = findViewById(R.id.editText);
+        String studentUrl = editText.getText().toString();
+        ConfigUtil.setStudentManagerUrl(this, studentUrl);
+        EditText checkInEditText = findViewById(R.id.check_in_callback_editText);
+        String checkInCallBackUrl = checkInEditText.getText().toString();
+        ConfigUtil.setCheckInCallbackUrl(this, checkInCallBackUrl);
+        showToast("设置成功");
     }
 
     /**
@@ -146,6 +109,7 @@ public class ChooseFunctionActivity extends AppCompatActivity {
 
     /**
      * 签到
+     *
      * @param view
      */
     public void jumpToCheckInActivity(View view) {
@@ -154,6 +118,7 @@ public class ChooseFunctionActivity extends AppCompatActivity {
 
     /**
      * 学生管理
+     *
      * @param view
      */
     public void jumpToStudentManageActivity(View view) {

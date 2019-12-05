@@ -4,6 +4,8 @@ import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -20,6 +22,7 @@ import java.util.List;
  */
 public class CameraHelper implements Camera.PreviewCallback {
     private static final String TAG = "CameraHelper";
+    private CameraManager cameraManager;
     private Camera mCamera;
     private int mCameraId;
     private Point previewViewSize;
@@ -35,6 +38,7 @@ public class CameraHelper implements Camera.PreviewCallback {
     private CameraListener cameraListener;
 
     private CameraHelper(CameraHelper.Builder builder) {
+        cameraManager = builder.cameraManager;
         previewDisplayView = builder.previewDisplayView;
         specificCameraId = builder.specificCameraId;
         cameraListener = builder.cameraListener;
@@ -66,7 +70,7 @@ public class CameraHelper implements Camera.PreviewCallback {
             //相机数量为2则打开1,1则打开0,相机ID 1为前置，0为后置
             mCameraId = Camera.getNumberOfCameras() - 1;
             //若指定了相机ID且该相机存在，则打开指定的相机
-            if (specificCameraId != null && specificCameraId <= mCameraId) {
+            if (specificCameraId != null && specificCameraId < mCameraId) {
                 mCameraId = specificCameraId;
             }
 
@@ -80,7 +84,8 @@ public class CameraHelper implements Camera.PreviewCallback {
             if (mCamera == null) {
                 mCamera = Camera.open(mCameraId);
             }
-            displayOrientation = getCameraOri(rotation);
+            displayOrientation = getCameraOri(mCameraId, rotation, additionalRotation);
+            Log.i(TAG, "displayOrientation: " + rotation + "," + displayOrientation);
             mCamera.setDisplayOrientation(displayOrientation);
             try {
                 Camera.Parameters parameters = mCamera.getParameters();
@@ -106,7 +111,7 @@ public class CameraHelper implements Camera.PreviewCallback {
                     }
                 }
 
-                if (parameters.getSupportedPreviewFpsRange().isEmpty()){
+                if (parameters.getSupportedPreviewFpsRange().isEmpty()) {
                     Log.i(TAG, "SupportedPreviewFpsRange empty");
                 }
                 for (int[] range : parameters.getSupportedPreviewFpsRange()) {
@@ -137,7 +142,7 @@ public class CameraHelper implements Camera.PreviewCallback {
         }
     }
 
-    private int getCameraOri(int rotation) {
+    public static int getCameraOri(int mCameraId, int rotation, int additionalRotation) {
         int degrees = rotation * 90;
         switch (rotation) {
             case Surface.ROTATION_0:
@@ -299,7 +304,7 @@ public class CameraHelper implements Camera.PreviewCallback {
     public void changeDisplayOrientation(int rotation) {
         if (mCamera != null) {
             this.rotation = rotation;
-            displayOrientation = getCameraOri(rotation);
+            displayOrientation = getCameraOri(mCameraId, rotation, additionalRotation);
             mCamera.setDisplayOrientation(displayOrientation);
             if (cameraListener != null) {
                 cameraListener.onCameraConfigurationChanged(mCameraId, displayOrientation);
@@ -309,6 +314,7 @@ public class CameraHelper implements Camera.PreviewCallback {
 
     public static final class Builder {
 
+        private CameraManager cameraManager;
         /**
          * 预览显示的view，目前仅支持surfaceView和textureView
          */
@@ -347,6 +353,10 @@ public class CameraHelper implements Camera.PreviewCallback {
         public Builder() {
         }
 
+        public Builder cameraManager(CameraManager val) {
+            this.cameraManager = val;
+            return this;
+        }
 
         public Builder previewOn(View val) {
             if (val instanceof SurfaceView || val instanceof TextureView) {

@@ -1,113 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              tools:context=".activity.ChooseFunctionActivity">
-
-    <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="0dp"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1">
-        <TextView
-                android:id="@+id/rb_orient_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/ft_op_title"
-        />
-        <RadioGroup
-                android:id="@+id/radio_group_ft_orient"
+            tools:context=".activity.ChooseFunctionActivity">
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+        <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-            <RadioButton
-                    android:text="@string/ft_op_0"
-                    android:id="@+id/rb_orient_0"
+            <TextView
+                    android:id="@+id/load_student_json_example"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            <RadioButton
-                    android:text="@string/ft_op_90"
-                    android:id="@+id/rb_orient_90"
+                    android:layout_height="match_parent"
+                    android:text="加载地址:"/>
+            <EditText
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            <RadioButton
-                    android:text="@string/ft_op_180"
-                    android:id="@+id/rb_orient_180"
+                    android:layout_height="match_parent"
+                    android:inputType="textPersonName"
+                    android:text="@string/student_manage_url"
+                    android:ems="10"
+                    android:id="@+id/editText"/>
+        </LinearLayout>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <TextView
+                    android:id="@+id/check_in_callback_example"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            <RadioButton
-                    android:text="@string/ft_op_270"
-                    android:id="@+id/rb_orient_270"
+                    android:layout_height="match_parent"
+                    android:text="回调地址:"/>
+            <EditText
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-            <RadioButton
-                    android:text="@string/ft_op_360"
-                    android:id="@+id/rb_orient_360"
+                    android:layout_height="match_parent"
+                    android:inputType="textPersonName"
+                    android:text="@string/student_manage_url"
+                    android:ems="10"
+                    android:id="@+id/check_in_callback_editText"/>
+
+        </LinearLayout>
+
+        <Button
+                android:layout_gravity="right"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="setUrl"
+                android:text="@string/setting"/>
+
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <Button
+                    android:gravity="center"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-        </RadioGroup>
+                    android:layout_height="wrap_content"
+                    android:onClick="activeEngine"
+                    android:text="@string/active_engine"/>
+
+            <Button
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="jumpToSingleImageActivity"
+                    android:text="@string/page_single_image"/>
+            <Button
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="jumpToPreviewActivity"
+                    android:text="@string/page_preview"/>
+
+            <Button
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="jumpToMultiImageActivity"
+                    android:text="@string/page_multi_image"/>
+
+            <Button
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="jumpToFaceRecognizeActivity"
+                    android:text="@string/face_recognize_mode"/>
+
+            <Button
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="jumpToBatchRegisterActivity"
+                    android:text="@string/face_manage"/>
+
+            <Button
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="jumpToCheckInActivity"
+                    android:text="@string/check_in"/>
+
+            <Button
+                    android:gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="jumpToStudentManageActivity"
+                    android:text="@string/student_manage"/>
+        </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="3">
-        <Button
-                android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="activeEngine"
-                android:text="@string/active_engine"/>
-
-        <Button
-                android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="jumpToSingleImageActivity"
-                android:text="@string/page_single_image"/>
-        <Button
-                android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="jumpToPreviewActivity"
-                android:text="@string/page_preview"/>
-
-        <Button
-                android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="jumpToMultiImageActivity"
-                android:text="@string/page_multi_image"/>
-
-
-        <Button
-                android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="jumpToFaceRecognizeActivity"
-                android:text="@string/face_recognize_mode"/>
-
-        <Button
-                android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="jumpToBatchRegisterActivity"
-                android:text="@string/face_manage"/>
-
-        <Button
-                android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="jumpToCheckInActivity"
-                android:text="@string/check_in"/>
-
-        <Button
-                android:gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="jumpToStudentManageActivity"
-                android:text="@string/student_manage"/>
-    </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

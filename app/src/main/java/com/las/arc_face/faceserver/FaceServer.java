@@ -4,12 +4,8 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 import com.arcsoft.face.*;
-import com.arcsoft.face.enums.DetectFaceOrientPriority;
-import com.arcsoft.face.enums.DetectMode;
-import com.las.arc_face.activity.ChooseFunctionActivity;
 import com.las.arc_face.common.Constants;
 import com.las.arc_face.config.FaceEngineConfig;
-import com.las.arc_face.util.ConfigUtil;
 import com.las.arc_face.util.student.StudentInfo;
 import com.las.arc_face.util.student.StudentInfoDao;
 
@@ -42,13 +38,14 @@ public class FaceServer {
     private boolean isProcessing = false;
 
     public boolean init(Context context) {
-        return init(context, FaceEngineConfig.video(0));
+        return init(context, FaceEngineConfig.image(0));
     }
 
     /**
      * 初始化
+     *
      * @param context 上下文对象
-     * @param config 配置
+     * @param config  配置
      * @return 是否初始化成功
      */
     public boolean init(Context context, FaceEngineConfig config) {
@@ -129,23 +126,11 @@ public class FaceServer {
             if (context == null) {
                 return 0;
             }
-            if (ROOT_PATH == null) {
-                ROOT_PATH = context.getFilesDir().getAbsolutePath();
+            if (faceRegisterInfoList == null) {
+                return 0;
             }
 
-            File featureFileDir = new File(ROOT_PATH + File.separator + SAVE_FEATURE_DIR);
-            int featureCount = 0;
-            if (featureFileDir.exists() && featureFileDir.isDirectory()) {
-                String[] featureFiles = featureFileDir.list();
-                featureCount = featureFiles == null ? 0 : featureFiles.length;
-            }
-            int imageCount = 0;
-            File imgFileDir = new File(ROOT_PATH + File.separator + SAVE_IMG_DIR);
-            if (imgFileDir.exists() && imgFileDir.isDirectory()) {
-                String[] imageFiles = imgFileDir.list();
-                imageCount = imageFiles == null ? 0 : imageFiles.length;
-            }
-            return featureCount > imageCount ? imageCount : featureCount;
+            return faceRegisterInfoList.size();
         }
     }
 
@@ -154,37 +139,15 @@ public class FaceServer {
             if (context == null) {
                 return 0;
             }
-            if (ROOT_PATH == null) {
-                ROOT_PATH = context.getFilesDir().getAbsolutePath();
+            if (faceRegisterInfoList == null) {
+                return 0;
             }
-            if (faceRegisterInfoList != null) {
-                faceRegisterInfoList.clear();
+            int total = faceRegisterInfoList.size();
+            for (StudentInfo studentInfo : faceRegisterInfoList) {
+                studentInfoDao.deleteByStudentId(studentInfo.getStudentId());
             }
-            File featureFileDir = new File(ROOT_PATH + File.separator + SAVE_FEATURE_DIR);
-            int deletedFeatureCount = 0;
-            if (featureFileDir.exists() && featureFileDir.isDirectory()) {
-                File[] featureFiles = featureFileDir.listFiles();
-                if (featureFiles != null && featureFiles.length > 0) {
-                    for (File featureFile : featureFiles) {
-                        if (featureFile.delete()) {
-                            deletedFeatureCount++;
-                        }
-                    }
-                }
-            }
-            int deletedImageCount = 0;
-            File imgFileDir = new File(ROOT_PATH + File.separator + SAVE_IMG_DIR);
-            if (imgFileDir.exists() && imgFileDir.isDirectory()) {
-                File[] imgFiles = imgFileDir.listFiles();
-                if (imgFiles != null && imgFiles.length > 0) {
-                    for (File imgFile : imgFiles) {
-                        if (imgFile.delete()) {
-                            deletedImageCount++;
-                        }
-                    }
-                }
-            }
-            return deletedFeatureCount > deletedImageCount ? deletedImageCount : deletedFeatureCount;
+            faceRegisterInfoList.clear();
+            return total;
         }
     }
 
@@ -224,19 +187,18 @@ public class FaceServer {
         if (faceEngine == null || isProcessing || faceFeature == null || faceRegisterInfoList == null || faceRegisterInfoList.size() == 0) {
             return null;
         }
+        Log.i(TAG, "getTopOfFaceLib: faceRegisterInfoList size " + faceRegisterInfoList.size());
         FaceFeature tempFaceFeature = new FaceFeature();
         FaceSimilar faceSimilar = new FaceSimilar();
         float maxSimilar = 0;
         int maxSimilarIndex = -1;
         isProcessing = true;
-        for (int n = 0; n < 100; n++) {
-            for (int i = 0; i < faceRegisterInfoList.size(); i++) {
-                tempFaceFeature.setFeatureData(faceRegisterInfoList.get(i).getFeatureData());
-                faceEngine.compareFaceFeature(faceFeature, tempFaceFeature, faceSimilar);
-                if (faceSimilar.getScore() > maxSimilar) {
-                    maxSimilar = faceSimilar.getScore();
-                    maxSimilarIndex = i;
-                }
+        for (int i = 0; i < faceRegisterInfoList.size(); i++) {
+            tempFaceFeature.setFeatureData(faceRegisterInfoList.get(i).getFeatureData());
+            faceEngine.compareFaceFeature(faceFeature, tempFaceFeature, faceSimilar);
+            if (faceSimilar.getScore() > maxSimilar) {
+                maxSimilar = faceSimilar.getScore();
+                maxSimilarIndex = i;
             }
         }
         isProcessing = false;

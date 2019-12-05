@@ -89,7 +89,7 @@ public class PreviewActivity extends AppCompatActivity implements ViewTreeObserv
 
     private void initEngine() {
         faceEngine = new FaceEngine();
-        afCode = faceEngine.init(this.getApplicationContext(), DetectMode.ASF_DETECT_MODE_VIDEO, DetectFaceOrientPriority.valueOf(ConfigUtil.getFtOrient(this)),
+        afCode = faceEngine.init(this, DetectMode.ASF_DETECT_MODE_VIDEO, DetectFaceOrientPriority.ASF_OP_ALL_OUT,
                 16, 20, FaceEngine.ASF_FACE_DETECT | FaceEngine.ASF_AGE | FaceEngine.ASF_FACE3DANGLE | FaceEngine.ASF_GENDER | FaceEngine.ASF_LIVENESS);
         VersionInfo versionInfo = new VersionInfo();
         faceEngine.getVersion(versionInfo);
