@@ -26,6 +26,8 @@
     <string name="batch_register">batch register</string>
     <string name="notification_register">please put the images that need to register into directory \nsdcard/arcfacedemo/register</string>
     <string name="registering_please_wait">registering,please wait</string>
+    <string name="deleteing_please_wait">deleteing,please wait</string>
+    <string name="processing_please_wait">processing,please wait</string>
     <string name="clear_faces">clear faces</string>
     <string name="no_face_need_to_delete">no face need to delete</string>
     <string name="notification">notification</string>

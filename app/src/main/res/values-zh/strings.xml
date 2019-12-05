@@ -26,6 +26,8 @@
     <string name="batch_register">批量注册</string>
     <string name="notification_register">请将需要注册的图片放在\nsdcard/arcfacedemo/register\n目录下</string>
     <string name="registering_please_wait">注册中，请稍等</string>
+    <string name="deleteing_please_wait">删除中，请稍等</string>
+    <string name="processing_please_wait">处理中，请稍等</string>
     <string name="clear_faces">清空人脸库</string>
     <string name="no_face_need_to_delete">无人脸需要删除</string>
     <string name="notification">提示</string>

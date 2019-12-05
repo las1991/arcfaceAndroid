@@ -24,13 +24,24 @@ import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.arcsoft.face.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.las.arc_face.R;
 import com.las.arc_face.config.FaceEngineConfig;
 import com.las.arc_face.faceserver.CompareResult;
 import com.las.arc_face.faceserver.FaceServer;
 import com.las.arc_face.model.DrawInfo;
 import com.las.arc_face.model.FacePreviewInfo;
+import com.las.arc_face.model.Student;
+import com.las.arc_face.request.CharsetStringRequest;
 import com.las.arc_face.util.ConfigUtil;
 import com.las.arc_face.util.DrawHelper;
 import com.las.arc_face.util.camera.CameraHelper;
@@ -49,8 +60,12 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -96,7 +111,6 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
     private Switch switchLivenessDetect;
 
     private static final int ACTION_REQUEST_PERMISSIONS = 0x001;
-    private static final float SIMILAR_THRESHOLD = 0.8F;
     /**
      * 所需的所有权限信息
      */
@@ -446,8 +460,8 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
                             return;
                         }
 
-                        Log.d(TAG, "onNext: fr search get result  = " + System.currentTimeMillis() + " trackId = " + requestId + "  similar = " + compareResult.getSimilar());
-                        if (compareResult.getSimilar() > SIMILAR_THRESHOLD) {
+                        Log.d(TAG, "onNext: fr search get result, trackId = " + requestId + "  similar = " + compareResult.getSimilar());
+                        if (compareResult.getSimilar() > FaceEngineConfig.SIMILAR_THRESHOLD) {
                             boolean isAdded = false;
                             if (compareResultList == null) {
                                 requestFeatureStatusMap.put(requestId, RequestFeatureStatus.FAILED);
@@ -490,6 +504,33 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
 
                     }
                 });
+    }
+
+    public void checkInCallback(Object data, final Volley mResultCallback) {
+        String url = ConfigUtil.getCheckInCallbackUrl(this);
+        Log.i(TAG, "checkInCallback:  url=" + url);
+        RequestQueue queue = Volley.newRequestQueue(this);
+        Gson gson = new Gson();
+
+        try {
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, url, new JSONObject(gson.toJson(data)),
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            Log.i(TAG, "onResponse: " + response);
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.e(TAG, "onErrorResponse: ", error);
+                        }
+                    }
+            );
+            queue.add(request);
+        } catch (JSONException e) {
+        }
+
     }
 
     /**

@@ -98,7 +98,7 @@ public class FaceServer {
      * 销毁
      */
     public void unInit() {
-        synchronized (this) {
+        synchronized (FaceServer.class) {
             if (faceRegisterInfoList != null) {
                 faceRegisterInfoList.clear();
                 faceRegisterInfoList = null;
@@ -116,13 +116,13 @@ public class FaceServer {
      * @param context 上下文对象
      */
     private void initFaceList(Context context) {
-        synchronized (this) {
+        synchronized (FaceServer.class) {
             faceRegisterInfoList.addAll(studentInfoDao.queryAll());
         }
     }
 
     public int getFaceNumber(Context context) {
-        synchronized (this) {
+        synchronized (FaceServer.class) {
             if (context == null) {
                 return 0;
             }
@@ -135,7 +135,7 @@ public class FaceServer {
     }
 
     public int clearAllFaces(Context context) {
-        synchronized (this) {
+        synchronized (FaceServer.class) {
             if (context == null) {
                 return 0;
             }
@@ -162,7 +162,7 @@ public class FaceServer {
      * @return 是否注册成功
      */
     public boolean register(Context context, byte[] nv21, int width, int height, StudentInfo student) {
-        synchronized (this) {
+        synchronized (FaceServer.class) {
             if (student == null || faceEngine == null || context == null || nv21 == null || width % 4 != 0 || nv21.length != width * height * 3 / 2) {
                 Log.e(TAG, "register: param null");
                 return false;

@@ -34,6 +34,7 @@ import com.las.arc_face.util.ConfigUtil;
 import com.las.arc_face.util.ImageUtil;
 import com.las.arc_face.util.student.StudentInfo;
 import com.las.arc_face.util.student.StudentInfoDao;
+import com.las.arc_face.widget.ProgressDialog;
 import com.las.arc_face.widget.StudentInfoAdapter;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -63,7 +64,7 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
     /**
      * 提示对话框
      */
-    private AlertDialog progressDialog;
+    private ProgressDialog progressDialog;
 
     private FaceServer faceServer = new FaceServer();
 
@@ -97,10 +98,7 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
         studentInfoAdapter.setOnRecyclerViewListener(this);
 
         tvNotice = findViewById(R.id.tv_notice);
-        progressDialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.processing)
-                .setView(new ProgressBar(this))
-                .create();
+        progressDialog = new ProgressDialog(this);
         initData();
     }
 
@@ -213,8 +211,12 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
     }
 
     public void batchUnRegister(View view) {
+        progressDialog.setTitle(R.string.deleteing_please_wait);
+        progressDialog.setMaxProgress(faceServer.getFaceNumber(this));
+        progressDialog.show();
         faceServer.clearAllFaces(this);
         studentInfoAdapter.notifyDataSetChanged();
+        progressDialog.dismiss();
         showToast("success");
     }
 
@@ -226,7 +228,8 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
         if (null == studentInfoAdapter) {
             return;
         }
-
+        progressDialog.setMaxProgress(studentInfoAdapter.getItemCount());
+        progressDialog.setTitle(R.string.registering_please_wait);
         progressDialog.show();
 
         //图像转化操作和部分引擎调用比较耗时，建议放子线程操作
@@ -243,15 +246,19 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
                 .subscribeOn(Schedulers.computation())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Integer>() {
+                    int progress;
+
                     @Override
                     public void onSubscribe(Disposable d) {
                         Log.i(TAG, "onSubscribe: " + d);
                     }
 
                     @Override
-                    public void onNext(Integer o) {
-                        Log.i(TAG, "onNext: " + o);
-                        studentInfoAdapter.notifyItemChanged((int) o);
+                    public void onNext(Integer pos) {
+                        Log.i(TAG, "onNext: progress=" + progress + ", pos=" + pos);
+                        progress++;
+                        progressDialog.refreshProgress(progress);
+                        studentInfoAdapter.notifyItemChanged(pos);
                     }
 
                     @Override
@@ -262,8 +269,8 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
                     @Override
                     public void onComplete() {
                         Log.i(TAG, "onComplete: ");
-                        SpannableStringBuilder builder=new SpannableStringBuilder();
-                        addNotificationInfo(builder,null,"finish!");
+                        SpannableStringBuilder builder = new SpannableStringBuilder();
+                        addNotificationInfo(builder, null, "progress = ", String.valueOf(progress), " finish!");
                         appendNotificationAndFinish(builder);
                         view.setClickable(true);
                     }
@@ -349,7 +356,7 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
         if (null == studentInfoAdapter) {
             return;
         }
-
+        progressDialog.setMaxProgress(1);
         progressDialog.show();
         Observable.create(new ObservableOnSubscribe<Object>() {
             @Override
@@ -378,6 +385,8 @@ public class StudentManageActivity extends BaseActivity implements StudentInfoAd
 
                     @Override
                     public void onComplete() {
+                        progressDialog.refreshProgress(1);
+                        appendNotificationAndFinish(null);
                         showToast("finish!");
                     }
                 });

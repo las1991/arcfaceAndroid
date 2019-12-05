@@ -10,6 +10,10 @@ public class FaceEngineConfig {
     public static final int MAX_DETECT_NUM_LIVE = 1;
 
 
+    public static final float SIMILAR_THRESHOLD = 0.8F;
+
+
+
     private static DetectFaceOrientPriority orient2Priority(int orient) {
         switch (orient) {
             case 90:

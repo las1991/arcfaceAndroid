@@ -28,7 +28,6 @@ public class ProgressDialog extends AlertDialog {
         setTitle(R.string.registering_please_wait);
     }
 
-
     public void setMaxProgress(int max) {
         if (max > 0) {
             this.max = max;
