@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.las.arc_face.R;
 import com.las.arc_face.faceserver.CompareResult;
+import com.las.arc_face.faceserver.FaceRegister;
 import com.las.arc_face.faceserver.FaceServer;
 
 import java.io.File;
@@ -40,11 +41,11 @@ public class ShowFaceInfoAdapter extends RecyclerView.Adapter<ShowFaceInfoAdapte
         if (compareResultList == null) {
             return;
         }
-        File imgFile = new File(FaceServer.ROOT_PATH + File.separator + FaceServer.SAVE_IMG_DIR + File.separator + compareResultList.get(position).getUserName() + FaceServer.IMG_SUFFIX);
+        CompareResult compareResult = compareResultList.get(position);
         Glide.with(holder.imageView)
-                .load(imgFile)
+                .load(compareResult.getStudentInfo().getFaceData())
                 .into(holder.imageView);
-        holder.textView.setText(compareResultList.get(position).getUserName());
+        holder.textView.setText(compareResult.getStudentInfo().getName());
     }
 
     @Override

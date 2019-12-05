@@ -18,8 +18,11 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.las.arc_face.R;
+import com.las.arc_face.config.FaceEngineConfig;
 import com.las.arc_face.faceserver.FaceServer;
+import com.las.arc_face.model.Student;
 import com.las.arc_face.util.ImageUtil;
+import com.las.arc_face.util.student.StudentInfo;
 import com.las.arc_face.widget.ProgressDialog;
 
 import java.io.File;
@@ -56,7 +59,7 @@ public class FaceManageActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         tvNotificationRegisterResult = findViewById(R.id.notification_register_result);
         progressDialog = new ProgressDialog(this);
-        faceServer.init(this);
+        faceServer.init(this, FaceEngineConfig.image(0));
     }
 
     @Override
@@ -72,7 +75,7 @@ public class FaceManageActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    public void batchRegister(View view) {
+    public void batchRegisterFile(View view) {
         if (checkPermissions(NEEDED_PERMISSIONS)) {
             doRegister();
         } else {
@@ -122,6 +125,10 @@ public class FaceManageActivity extends AppCompatActivity {
                         }
                     });
                     final File jpgFile = jpgFiles[i];
+                    StudentInfo student = new StudentInfo();
+                    student.setName(jpgFile.getName().substring(0, jpgFile.getName().lastIndexOf(".")));
+                    student.setAvatar(jpgFile.getPath());
+                    student.setId(Long.valueOf(finalI));
                     try {
                         Log.i(FaceManageActivity.class.getSimpleName(), "process " + jpgFile.getName());
                         Bitmap bitmap = BitmapFactory.decodeFile(jpgFile.getAbsolutePath());
@@ -149,8 +156,8 @@ public class FaceManageActivity extends AppCompatActivity {
                         if (nv21 == null) {
                             Log.i(FaceManageActivity.class.getSimpleName(), jpgFile.getName() + "bitmapToNv21 fail");
                         }
-                        boolean success = faceServer.register(FaceManageActivity.this, nv21, bitmap.getWidth(), bitmap.getHeight(),
-                                jpgFile.getName().substring(0, jpgFile.getName().lastIndexOf(".")));
+
+                        boolean success = faceServer.register(FaceManageActivity.this, nv21, bitmap.getWidth(), bitmap.getHeight(), student);
                         if (!success) {
                             Log.e(FaceManageActivity.class.getSimpleName(), jpgFile.getName() + " FaceServer register fail");
                             File failedFile = new File(REGISTER_FAILED_DIR + File.separator + jpgFile.getName());

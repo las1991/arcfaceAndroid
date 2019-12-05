@@ -1,17 +1,19 @@
 package com.las.arc_face.faceserver;
 
 import android.content.Context;
-import android.graphics.*;
+import android.os.Environment;
 import android.util.Log;
 import com.arcsoft.face.*;
 import com.arcsoft.face.enums.DetectFaceOrientPriority;
 import com.arcsoft.face.enums.DetectMode;
-import com.las.arc_face.model.FaceRegisterInfo;
+import com.las.arc_face.activity.ChooseFunctionActivity;
+import com.las.arc_face.common.Constants;
+import com.las.arc_face.config.FaceEngineConfig;
 import com.las.arc_face.util.ConfigUtil;
-import com.las.arc_face.util.ImageUtil;
-import com.las.arc_face.util.RectUtil;
+import com.las.arc_face.util.student.StudentInfo;
+import com.las.arc_face.util.student.StudentInfoDao;
 
-import java.io.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,33 +22,67 @@ import java.util.List;
  */
 public class FaceServer {
     public static final String IMG_SUFFIX = ".jpg";
-    public static String ROOT_PATH;
+    public static String ROOT_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "arcfacedemo";
     public static final String SAVE_IMG_DIR = "register" + File.separator + "imgs";
 
     private static final String TAG = "FaceServer";
     private static final String SAVE_FEATURE_DIR = "register" + File.separator + "features";
 
-    private static List<FaceRegisterInfo> faceRegisterInfoList;
-
+    private static List<StudentInfo> faceRegisterInfoList;
 
     private FaceEngine faceEngine = null;
+
+    private StudentInfoDao studentInfoDao;
+
+    private FaceEngineConfig config;
 
     /**
      * 是否正在搜索人脸，保证搜索操作单线程进行
      */
     private boolean isProcessing = false;
 
+    public boolean init(Context context) {
+        return init(context, FaceEngineConfig.video(0));
+    }
+
     /**
      * 初始化
-     *
      * @param context 上下文对象
+     * @param config 配置
      * @return 是否初始化成功
      */
-    public boolean init(Context context) {
+    public boolean init(Context context, FaceEngineConfig config) {
+        if (null == this.config) {
+            this.config = config;
+        }
+        if (context == null) {
+            return false;
+        }
         synchronized (this) {
-            if (faceEngine == null && context != null) {
+            if (studentInfoDao == null) {
+                studentInfoDao = new StudentInfoDao(context);
+            }
+            if (faceRegisterInfoList == null) {
+                faceRegisterInfoList = new ArrayList<>();
+            }
+            if (faceEngine == null) {
                 faceEngine = new FaceEngine();
-                int engineCode = faceEngine.init(context, DetectMode.ASF_DETECT_MODE_VIDEO, DetectFaceOrientPriority.valueOf(ConfigUtil.getFtOrient(context)), 16, 20, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT);
+                int engineCode = 0;
+                ActiveFileInfo activeFileInfo = new ActiveFileInfo();
+                engineCode = FaceEngine.getActiveFileInfo(context, activeFileInfo);
+                if (engineCode == ErrorInfo.MOK) {
+                    Log.i(TAG, "activeFileInfo is : " + activeFileInfo);
+                } else if (engineCode == ErrorInfo.MERR_ASF_ACTIVE_FILE_NO_EXIST) {
+                    engineCode = faceEngine.active(context, Constants.APP_ID, Constants.SDK_KEY);
+                    if (engineCode != ErrorInfo.MOK) {
+                        Log.e(TAG, "active: failed! code = " + engineCode);
+                        return false;
+                    }
+                } else {
+                    Log.i(TAG, "getActiveFileInfo failed, code is  : " + engineCode);
+                }
+
+                engineCode = faceEngine.init(context, config.getDetectMode(), config.getDetectFaceOrientPriority(), config.getDetectFaceScaleVal(), config.getDetectFaceMaxNum(), config.getCombinedMask());
                 if (engineCode == ErrorInfo.MOK) {
                     initFaceList(context);
                     return true;
@@ -56,6 +92,7 @@ public class FaceServer {
                     return false;
                 }
             }
+
             return false;
         }
     }
@@ -83,29 +120,7 @@ public class FaceServer {
      */
     private void initFaceList(Context context) {
         synchronized (this) {
-            if (ROOT_PATH == null) {
-                ROOT_PATH = context.getFilesDir().getAbsolutePath();
-            }
-            File featureDir = new File(ROOT_PATH + File.separator + SAVE_FEATURE_DIR);
-            if (!featureDir.exists() || !featureDir.isDirectory()) {
-                return;
-            }
-            File[] featureFiles = featureDir.listFiles();
-            if (featureFiles == null || featureFiles.length == 0) {
-                return;
-            }
-            faceRegisterInfoList = new ArrayList<>();
-            for (File featureFile : featureFiles) {
-                try {
-                    FileInputStream fis = new FileInputStream(featureFile);
-                    byte[] feature = new byte[FaceFeature.FEATURE_SIZE];
-                    fis.read(feature);
-                    fis.close();
-                    faceRegisterInfoList.add(new FaceRegisterInfo(feature, featureFile.getName()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+            faceRegisterInfoList.addAll(studentInfoDao.queryAll());
         }
     }
 
@@ -180,24 +195,21 @@ public class FaceServer {
      * @param nv21    NV21数据
      * @param width   NV21宽度
      * @param height  NV21高度
-     * @param name    保存的名字，可为空
+     * @param student 保存的名字，可为空
      * @return 是否注册成功
      */
-    public boolean register(Context context, byte[] nv21, int width, int height, String name) {
+    public boolean register(Context context, byte[] nv21, int width, int height, StudentInfo student) {
         synchronized (this) {
-            if (faceEngine == null || context == null || nv21 == null || width % 4 != 0 || nv21.length != width * height * 3 / 2) {
+            if (student == null || faceEngine == null || context == null || nv21 == null || width % 4 != 0 || nv21.length != width * height * 3 / 2) {
+                Log.e(TAG, "register: param null");
                 return false;
             }
 
-            //内存中的数据同步
-            if (faceRegisterInfoList == null) {
-                faceRegisterInfoList = new ArrayList<>();
-            }
-            FaceRegisterInfo registerInfo = FaceRegister.register(faceEngine, nv21, width, height, name);
-            if (null == registerInfo) {
+            StudentInfo studentInfo = FaceRegister.register(faceEngine, nv21, width, height, student);
+            if (null == studentInfo) {
                 return false;
             }
-            faceRegisterInfoList.add(registerInfo);
+            faceRegisterInfoList.add(studentInfo);
             return true;
         }
     }
@@ -217,20 +229,21 @@ public class FaceServer {
         float maxSimilar = 0;
         int maxSimilarIndex = -1;
         isProcessing = true;
-        for (int i = 0; i < faceRegisterInfoList.size(); i++) {
-            tempFaceFeature.setFeatureData(faceRegisterInfoList.get(i).getFeatureData());
-            faceEngine.compareFaceFeature(faceFeature, tempFaceFeature, faceSimilar);
-            if (faceSimilar.getScore() > maxSimilar) {
-                maxSimilar = faceSimilar.getScore();
-                maxSimilarIndex = i;
+        for (int n = 0; n < 100; n++) {
+            for (int i = 0; i < faceRegisterInfoList.size(); i++) {
+                tempFaceFeature.setFeatureData(faceRegisterInfoList.get(i).getFeatureData());
+                faceEngine.compareFaceFeature(faceFeature, tempFaceFeature, faceSimilar);
+                if (faceSimilar.getScore() > maxSimilar) {
+                    maxSimilar = faceSimilar.getScore();
+                    maxSimilarIndex = i;
+                }
             }
         }
         isProcessing = false;
         if (maxSimilarIndex != -1) {
-            return new CompareResult(faceRegisterInfoList.get(maxSimilarIndex).getName(), maxSimilar);
+            StudentInfo studentInfo = faceRegisterInfoList.get(maxSimilarIndex);
+            return new CompareResult(studentInfo, maxSimilar);
         }
         return null;
     }
-
-
 }

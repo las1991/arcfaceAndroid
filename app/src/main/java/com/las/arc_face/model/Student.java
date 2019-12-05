@@ -4,7 +4,7 @@ public class Student {
     private Integer id;
     private String name;
     private String avatar;
-
+    
     public Integer getId() {
         return id;
     }
@@ -28,4 +28,5 @@ public class Student {
     public void setAvatar(String avatar) {
         this.avatar = avatar;
     }
+
 }

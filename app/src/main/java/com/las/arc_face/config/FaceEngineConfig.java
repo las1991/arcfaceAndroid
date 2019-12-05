@@ -1,9 +1,35 @@
 package com.las.arc_face.config;
 
+import android.content.Context;
+import com.arcsoft.face.FaceEngine;
 import com.arcsoft.face.enums.DetectFaceOrientPriority;
 import com.arcsoft.face.enums.DetectMode;
+import com.las.arc_face.util.ConfigUtil;
 
 public class FaceEngineConfig {
+
+    private static DetectFaceOrientPriority orient2Priority(int orient) {
+        switch (orient) {
+            case 90:
+                return DetectFaceOrientPriority.ASF_OP_90_ONLY;
+            case 180:
+                return DetectFaceOrientPriority.ASF_OP_180_ONLY;
+            case 270:
+                return DetectFaceOrientPriority.ASF_OP_270_ONLY;
+            case 360:
+                return DetectFaceOrientPriority.ASF_OP_ALL_OUT;
+            default:
+                return DetectFaceOrientPriority.ASF_OP_0_ONLY;
+        }
+    }
+
+    public static FaceEngineConfig video(int orient) {
+        return new FaceEngineConfig(DetectMode.ASF_DETECT_MODE_VIDEO, orient2Priority(orient), 16, 20, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT);
+    }
+
+    public static FaceEngineConfig image(int orient) {
+        return new FaceEngineConfig(DetectMode.ASF_DETECT_MODE_IMAGE, orient2Priority(orient), 16, 20, FaceEngine.ASF_FACE_RECOGNITION | FaceEngine.ASF_FACE_DETECT);
+    }
 
     private DetectMode detectMode;
     private DetectFaceOrientPriority detectFaceOrientPriority;

@@ -1,24 +1,25 @@
 package com.las.arc_face.faceserver;
 
 
+import com.las.arc_face.util.student.StudentInfo;
 
 public class CompareResult {
-    private String userName;
+    private StudentInfo studentInfo;
     private float similar;
     private int trackId;
 
-    public CompareResult(String userName, float similar) {
-        this.userName = userName;
+    public CompareResult(StudentInfo studentInfo, float similar) {
+        this.studentInfo = studentInfo;
         this.similar = similar;
     }
 
 
-    public String getUserName() {
-        return userName;
+    public StudentInfo getStudentInfo() {
+        return studentInfo;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setStudentInfo(StudentInfo studentInfo) {
+        this.studentInfo = studentInfo;
     }
 
     public float getSimilar() {
@@ -36,4 +37,5 @@ public class CompareResult {
     public void setTrackId(int trackId) {
         this.trackId = trackId;
     }
+    
 }

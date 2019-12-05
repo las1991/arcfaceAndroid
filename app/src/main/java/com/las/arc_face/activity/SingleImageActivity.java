@@ -317,7 +317,7 @@ public class SingleImageActivity extends AppCompatActivity {
         if (faceProcessCode != ErrorInfo.MOK) {
             addNotificationInfo(notificationSpannableStringBuilder, new ForegroundColorSpan(Color.RED), "process failed! code is ", String.valueOf(faceProcessCode), "\n");
         } else {
-//            Log.i(TAG, "processImage: process costTime = " + (System.currentTimeMillis() - processStartTime));
+            Log.i(TAG, "processImage: process costTime = " + (System.currentTimeMillis() - processStartTime));
         }
         //年龄信息结果
         List<AgeInfo> ageInfoList = new ArrayList<>();

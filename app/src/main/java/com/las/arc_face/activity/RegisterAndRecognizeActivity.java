@@ -39,6 +39,7 @@ import com.las.arc_face.util.camera.CameraListener;
 import com.las.arc_face.util.face.FaceHelper;
 import com.las.arc_face.util.face.FaceListener;
 import com.las.arc_face.util.face.RequestFeatureStatus;
+import com.las.arc_face.util.student.StudentInfo;
 import com.las.arc_face.widget.FaceRectView;
 import com.las.arc_face.widget.ShowFaceInfoAdapter;
 import io.reactivex.Observable;
@@ -320,7 +321,12 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                     Observable.create(new ObservableOnSubscribe<Boolean>() {
                         @Override
                         public void subscribe(ObservableEmitter<Boolean> emitter) {
-                            boolean success = faceServer.register(RegisterAndRecognizeActivity.this, nv21.clone(), previewSize.width, previewSize.height, "registered " + faceHelper.getCurrentTrackId());
+                            String name = "学生注册 " + faceHelper.getCurrentTrackId();
+                            StudentInfo student = new StudentInfo();
+                            student.setName(name);
+                            student.setAvatar(null);
+                            student.setId(Long.valueOf(faceHelper.getCurrentTrackId()));
+                            boolean success = faceServer.register(RegisterAndRecognizeActivity.this, nv21.clone(), previewSize.width, previewSize.height, student);
                             emitter.onNext(success);
                         }
                     })
@@ -485,7 +491,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
 
                     @Override
                     public void onNext(CompareResult compareResult) {
-                        if (compareResult == null || compareResult.getUserName() == null) {
+                        if (compareResult == null || compareResult.getStudentInfo() == null) {
                             requestFeatureStatusMap.put(requestId, RequestFeatureStatus.FAILED);
                             faceHelper.addName(requestId, "访客 " + requestId);
                             return;
@@ -517,7 +523,7 @@ public class RegisterAndRecognizeActivity extends AppCompatActivity implements V
                                 adapter.notifyItemInserted(compareResultList.size() - 1);
                             }
                             requestFeatureStatusMap.put(requestId, RequestFeatureStatus.SUCCEED);
-                            faceHelper.addName(requestId, compareResult.getUserName());
+                            faceHelper.addName(requestId, compareResult.getStudentInfo().getName());
 
                         } else {
                             requestFeatureStatusMap.put(requestId, RequestFeatureStatus.FAILED);

@@ -58,7 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class CheckInActivity extends AppCompatActivity implements ViewTreeObserver.OnGlobalLayoutListener {
-    private static final String TAG = "RegisterAndRecognize";
+    private static final String TAG = CheckInActivity.class.getSimpleName();
     private static final int MAX_DETECT_NUM = 10;
     /**
      * 当FR成功，活体未成功时，FR等待活体的时间
@@ -80,21 +80,6 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
      * 活体检测的开关
      */
     private boolean livenessDetect = false;
-
-    /**
-     * 注册人脸状态码，准备注册
-     */
-    private static final int REGISTER_STATUS_READY = 0;
-    /**
-     * 注册人脸状态码，注册中
-     */
-    private static final int REGISTER_STATUS_PROCESSING = 1;
-    /**
-     * 注册人脸状态码，注册结束（无论成功失败）
-     */
-    private static final int REGISTER_STATUS_DONE = 2;
-
-    private int registerStatus = REGISTER_STATUS_DONE;
 
     private int afCode = -1;
     private ConcurrentHashMap<Integer, Integer> requestFeatureStatusMap = new ConcurrentHashMap<>();
@@ -124,7 +109,7 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register_and_recognize);
+        setContentView(R.layout.activity_check_in);
         //保持亮屏
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -308,6 +293,7 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
                     faceRectView.clearFaceInfo();
                 }
                 List<FacePreviewInfo> facePreviewInfoList = faceHelper.onPreviewFrame(nv21, livenessDetect);
+                //画框
                 if (facePreviewInfoList != null && faceRectView != null && drawHelper != null) {
                     List<DrawInfo> drawInfoList = new ArrayList<>();
                     for (int i = 0; i < facePreviewInfoList.size(); i++) {
@@ -317,42 +303,7 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
                     }
                     drawHelper.draw(faceRectView, drawInfoList);
                 }
-                if (registerStatus == REGISTER_STATUS_READY && facePreviewInfoList != null && facePreviewInfoList.size() > 0) {
-                    registerStatus = REGISTER_STATUS_PROCESSING;
-                    Observable.create(new ObservableOnSubscribe<Boolean>() {
-                        @Override
-                        public void subscribe(ObservableEmitter<Boolean> emitter) {
-                            boolean success = faceServer.register(CheckInActivity.this, nv21.clone(), previewSize.width, previewSize.height, "registered " + faceHelper.getCurrentTrackId());
-                            emitter.onNext(success);
-                        }
-                    })
-                            .subscribeOn(Schedulers.computation())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(new Observer<Boolean>() {
-                                @Override
-                                public void onSubscribe(Disposable d) {
 
-                                }
-
-                                @Override
-                                public void onNext(Boolean success) {
-                                    String result = success ? "register success!" : "register failed!";
-                                    Toast.makeText(CheckInActivity.this, result, Toast.LENGTH_SHORT).show();
-                                    registerStatus = REGISTER_STATUS_DONE;
-                                }
-
-                                @Override
-                                public void onError(Throwable e) {
-                                    Toast.makeText(CheckInActivity.this, "register failed!", Toast.LENGTH_SHORT).show();
-                                    registerStatus = REGISTER_STATUS_DONE;
-                                }
-
-                                @Override
-                                public void onComplete() {
-
-                                }
-                            });
-                }
                 clearLeftFace(facePreviewInfoList);
 
                 if (facePreviewInfoList != null && facePreviewInfoList.size() > 0 && previewSize != null) {
@@ -467,9 +418,11 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
                 .create(new ObservableOnSubscribe<CompareResult>() {
                     @Override
                     public void subscribe(ObservableEmitter<CompareResult> emitter) {
-                        Log.d(TAG, "subscribe: fr search start = " + System.currentTimeMillis() + " trackId = " + requestId);
+                        long start = System.currentTimeMillis();
+                        Log.d(TAG, "subscribe: fr search start = " + start + " trackId = " + requestId);
                         CompareResult compareResult = faceServer.getTopOfFaceLib(frFace);
-                        Log.d(TAG, "subscribe: fr search end = " + System.currentTimeMillis() + " trackId = " + requestId);
+                        long end = System.currentTimeMillis();
+                        Log.d(TAG, "subscribe: fr search end = " + end + ", trackId = " + requestId + ", cost = " + (end - start));
                         if (compareResult == null) {
                             emitter.onError(null);
                         } else {
@@ -487,13 +440,13 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
 
                     @Override
                     public void onNext(CompareResult compareResult) {
-                        if (compareResult == null || compareResult.getUserName() == null) {
+                        if (compareResult == null || compareResult.getStudentInfo() == null) {
                             requestFeatureStatusMap.put(requestId, RequestFeatureStatus.FAILED);
                             faceHelper.addName(requestId, "访客 " + requestId);
                             return;
                         }
 
-//                        Log.i(TAG, "onNext: fr search get result  = " + System.currentTimeMillis() + " trackId = " + requestId + "  similar = " + compareResult.getSimilar());
+                        Log.d(TAG, "onNext: fr search get result  = " + System.currentTimeMillis() + " trackId = " + requestId + "  similar = " + compareResult.getSimilar());
                         if (compareResult.getSimilar() > SIMILAR_THRESHOLD) {
                             boolean isAdded = false;
                             if (compareResultList == null) {
@@ -519,7 +472,7 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
                                 adapter.notifyItemInserted(compareResultList.size() - 1);
                             }
                             requestFeatureStatusMap.put(requestId, RequestFeatureStatus.SUCCEED);
-                            faceHelper.addName(requestId, compareResult.getUserName());
+                            faceHelper.addName(requestId, compareResult.getStudentInfo().getName());
 
                         } else {
                             requestFeatureStatusMap.put(requestId, RequestFeatureStatus.FAILED);
@@ -537,18 +490,6 @@ public class CheckInActivity extends AppCompatActivity implements ViewTreeObserv
 
                     }
                 });
-    }
-
-
-    /**
-     * 将准备注册的状态置为{@link #REGISTER_STATUS_READY}
-     *
-     * @param view 注册按钮
-     */
-    public void register(View view) {
-        if (registerStatus == REGISTER_STATUS_DONE) {
-            registerStatus = REGISTER_STATUS_READY;
-        }
     }
 
     /**
